@@ -14,15 +14,15 @@ from pytestbed.tar_tests.TestTarUpdateFile import TestTarUpdateFile
 from pytestbed.tar_tests.TestTarDeleteFile import TestTarDeleteFile
 from pytestbed.tar_tests.TestTarCompareFile import TestTarCompareFile
 
-def standardScenario(path):
+def standardScenario(debloatpath, origpath, features):
     suite = TpcpTestSuite()
-    suite.addTest(TestTarExtractFile(succeeds=True, exe=path))
-    suite.addTest(TestTarGetFile(succeeds=True, exe=path))
-    suite.addTest(TestTarListFile(succeeds=True, exe=path))
-    suite.addTest(TestTarConcatFile(succeeds=True, exe=path))
-    suite.addTest(TestTarCreateFile(succeeds=True, exe=path))
-    suite.addTest(TestTarCreateDirFile(succeeds=True, exe=path))
-    suite.addTest(TestTarUpdateFile(succeeds=True, exe=path))
-    suite.addTest(TestTarDeleteFile(succeeds=True, exe=path))
-    suite.addTest(TestTarCompareFile(succeeds=True, exe=path))
+    suite.addTest(TestTarExtractFile(features=features, exe=debloatpath, original=origpath))
+    suite.addTest(TestTarGetFile(features=features, exe=debloatpath, original=origpath))
+    suite.addTest(TestTarListFile(features=features, exe=debloatpath, original=origpath))
+    suite.addTest(TestTarConcatFile(features=features, exe=debloatpath, original=origpath))
+    suite.addTest(TestTarCreateFile(features=features, exe=debloatpath, original=origpath))
+    suite.addTest(TestTarCreateDirFile(features=features, exe=debloatpath, original=origpath))
+    suite.addTest(TestTarUpdateFile(features=features, exe=debloatpath, original=origpath))
+    suite.addTest(TestTarDeleteFile(features=features, exe=debloatpath, original=origpath))
+    suite.addTest(TestTarCompareFile(features=features, exe=debloatpath, original=origpath))
     return suite 

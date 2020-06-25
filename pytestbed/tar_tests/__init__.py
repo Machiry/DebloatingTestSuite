@@ -7,8 +7,8 @@ import unittest
 from pytestbed.tar_tests.ScenarioTarStandard import standardScenario
 from pytestbed.tar_tests.ScenarioTarDisableCreateTarballs import disableCreatingTarballsScenario
 
-def load_tests(path):
-    suite = standardScenario(path)
+def load_tests(debloatpath, origpath, features):
+    suite = standardScenario(debloatpath, origpath, features)
     #suite.addTest(disableCreatingTarballsScenario(path))
     return suite
 

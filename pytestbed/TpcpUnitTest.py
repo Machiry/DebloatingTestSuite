@@ -38,12 +38,17 @@ class TpcpTestCase(unittest.TestCase):
     """ A specialized TestCase that allows setting a specific
         executable to test as a class parameter.
     """
-    def __init__(self, methodName='runTest', succeeds=True, exe=None):
+    def __init__(self, methodName='runTest', features=[], exe=None, original=None):
         super(TpcpTestCase, self).__init__(methodName)
         # succeeds decides if this test case should succeed or not
-        self.succeeds = succeeds
+        self.enabled_features = features
         # exe saves the name of the debloated executable file to run
-        self.exe = abspath(exe)
+        self.exe = abspath(exe) if exe is not None else None
+        # original saves the path to the original exe (non-debloated version)
+        self.original = abspath(original) if original is not None else None
+        # sets features described by this particular test,
+        # NOTE: override in subclasses!
+        self.features = []
         
     @classmethod
     def setUpClass(cls, dirname):
@@ -67,13 +72,15 @@ class TpcpTestCase(unittest.TestCase):
     # -- ALL subclasses should use this assertBehavior or assertBoolean
     # rather than assertTrue or assertFalse
     def assertBehavior(self, assertion1, assertion2):
-        if self.succeeds:
+        i = set(self.features).intersection(self.enabled_features)
+        if len(i) > 0:
             super().assertEqual(assertion1, assertion2)
         else:
             super().assertNotEqual(assertion1, assertion2)
     
     def assertBoolean(self, assertion):
-        if self.succeeds:
+        i = set(self.features).intersection(self.enabled_features)
+        if len(i) > 0:
             super().assertTrue(assertion)
         else:
             super().assertFalse(assertion)

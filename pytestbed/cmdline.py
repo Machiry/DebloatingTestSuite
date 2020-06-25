@@ -23,7 +23,7 @@ import unittest
 
 # TODO: make this more automatic, this is just for proof of concept
 def tar_suite_features():
-    return set(['create', 'modify', 'remove'])
+    return set(['extract', 'create', 'modify', 'remove'])
 
 # process and return as a python dict of config
 def process_ini(inifile):
@@ -34,6 +34,14 @@ def process_ini(inifile):
     
     for testcase in config.sections():
         testcases[testcase] = {}
+        
+        if 'original' not in config[testcase]:
+            raise Exception
+        
+        # this is the original non-debloated executable that was used
+        # to produce the executable that we are testing
+        
+        testcases[testcase]['original'] = config[testcase]['original']
         
         if 'suite' not in config[testcase]:
             raise Exception
@@ -48,6 +56,8 @@ def process_ini(inifile):
         if 'included' in config[testcase]:
             included_list = (config[testcase]['included']).split(',')
             included_features = set([ x.strip() for x in included_list ])
+            if 'all' in included_features:
+                included_features = tar_suite_features()
             # include features only specifically defined from full set
             # intersection of two sets
             features_set = features_set & included_features
@@ -56,7 +66,8 @@ def process_ini(inifile):
             excluded_list = (config[testcase]['excluded']).split(',')
             excluded_features = set([ x.strip() for x in excluded_list ])
             # exclude the named features; overrides the included features if conflict
-            features_set = difference(features_set, excluded_features)
+            # difference of two sets
+            features_set = features_set - excluded_features
         
         testcases[testcase]['features'] = list(features_set)
         
@@ -116,7 +127,7 @@ def run_testbed():
             # TODO: build up full test suite but proof of concept for now
             testcases = process_ini(path)
             for exe in testcases:
-                suite = pytestbed.tar_tests.load_tests(exe)
+                suite = pytestbed.tar_tests.load_tests(exe, testcases[exe]['original'], testcases[exe]['features'])
                 TpcpTestRunner(verbosity=2).run(suite)
         elif option == 'chmod_path':
             suite = pytestbed.chmod_tests.load_tests(path)

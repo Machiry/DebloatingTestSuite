@@ -23,6 +23,8 @@ class TestTarExtractFile(TpcpTestCase):
     def setUp(self):
         # reset dir, so we're not stuck in a non-existent temp dir
         os.chdir(self._originaldir)
+        # set the features
+        self.features = ['extract']
         
     ### define real tests below!
     
