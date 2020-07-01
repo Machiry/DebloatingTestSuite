@@ -10,6 +10,9 @@ import warnings
 from typing import List, Tuple, Dict
 
 from os.path import abspath
+import os
+
+import tempfile
 
 ###
 # Next actually run the tests
@@ -51,9 +54,9 @@ class TpcpTestCase(unittest.TestCase):
         self.features = []
         
     @classmethod
-    def setUpClass(cls, dirname):
+    def setUpClass(cls):
         cls._originaldir = os.getcwd()
-        cls._workdir = 'pytestbed/' + dirname + '/'
+        #cls._workdir = 'pytestbed/' + self.dirname + '/'
         cls._tmpdir = tempfile.TemporaryDirectory()
         
     @classmethod
@@ -63,9 +66,14 @@ class TpcpTestCase(unittest.TestCase):
         # remove the tmpdir
         cls._tmpdir.cleanup()
         
-    def setUp(self):
+    def getWorkDirName(self, dirname):
+        return 'pytestbed/' + dirname + '/'
+        
+    def setUpTestFeatures(self, workdirname, features):
         # reset dir, so we're not stuck in a non-existent temp dir
         os.chdir(self._originaldir)
+        self._workdir = self.getWorkDirName(workdirname)
+        self.features = features
         
     # allows this test case to set whether it should pass or fail
     # depending on initial conditions

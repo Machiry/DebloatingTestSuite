@@ -6,25 +6,14 @@ import tempfile
 from pytestbed.TpcpUnitTest import TpcpTestCase
 
 class TestTarUpdateFile(TpcpTestCase):
-    
-    @classmethod
-    def setUpClass(cls):
-        cls._originaldir = os.getcwd()
-        cls._workdir = 'pytestbed/tar_tests/'
-        cls._tmpdir = tempfile.TemporaryDirectory()
-        
-    @classmethod
-    def tearDownClass(cls):
-        # restore old working directory 
-        os.chdir(cls._originaldir)
-        # remove the tmpdir
-        cls._tmpdir.cleanup()
         
     def setUp(self):
-        # reset dir, so we're not stuck in a non-existent temp dir
-        os.chdir(self._originaldir)
+        # set the working path, be sure to change the path name here!
+        workdirname = 'tar_tests'
         # set the features
-        self.features = ['modify']
+        features = ['modify']
+        # set up the test
+        self.setUpTestFeatures(workdirname, features)
         
     ### define real tests below!
     
