@@ -62,8 +62,8 @@ A full list of the recognized keys is available below.
   default, test output data is simply output to the terminal, but if this
   key is set to a file path, all output will be redirected to the file
   specified instead of the terminal.
-- `prescript` = allows the user to specify bash commands to be run prior
-  to running the test suite. NOTE: not yet fully implemented.
+- `prescript` and `postscript` = allows the user to specify bash commands to be
+  run prior to or after running the test suite. NOTE: not yet fully implemented.
 
 For more info on which test suites and features are available, check the help:
 ```python

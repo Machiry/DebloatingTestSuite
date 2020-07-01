@@ -83,6 +83,9 @@ def process_ini(inifile):
         if 'prescript' in config[testcase]:
             testcases[testcase]['prescript'] = config[testcase]['prescript']
             
+        if 'postscript' in config[testcase]:
+            testcases[testcase]['postscript'] = config[testcase]['postscript']
+            
     return testcases
 
 ###
