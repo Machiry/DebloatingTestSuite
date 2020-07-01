@@ -9,31 +9,63 @@ configurability.
 ## Quick Start ##
 
 ```python
-./run_testbed.py [[--TESTNAME PATH] ...]
+./run_testbed.py --batch ININAME
 ```
-where "TESTNAME" is the name of the executable to test. This name
-generally matches the name of the git submodule you wish to test.
+where "ININAME" is the name of a specially formatted configuration file.
+This file is in the de facto standard "INI" file format.
+It is a text file that consists of sections named in brackets (like `[section]`),
+one section per line, followed by one more key-value pairs, one pair
+per line. The pairs are written in the format `key = value`.
 
-Each TESTNAME takes a PATH as an option. The path is a full path to a single
-executable file (e.g., to run the tests against a single executable of user's
-choice).
+The purpose of this file is to define one or more tests, to allow more of
+a "batch scripting" mode. It may also be easier for debloating or other
+binary rewriting tools to emit this file as output, allowing further
+automation of the testing process.
 
-For example, to run the test suite on a debloated executable of tar,
-located at the user's home directory and named `~/tar_debloat`, you could
-type:
-```python
-./run_testbed.py --tar ~/tar_debloat
+Each test is defined in its own section,
+and the key-value pairs for each section represent various configuration
+options that are available for the test. Some keys are required,
+while others may be optional.
+
+For example, a simple batch file might look like:
+
 ```
-to run only the tar test suite on that specific debloated executable.
-It is up to the user to run any debloating and/or analysis tools on a given
-executable *first* before running the test suite on the resulting executable.
-A collection of standard, unmanipulated executables is provided for
-various architectures and compiler options, for each available test suite.
+[/home/tpcp/tar_debloated]
+original = /home/tpcp/tar
+suite = tar
+included = all
+```
 
-You could run more than one testbed at a time if preferred. Each testbed
-gets its own path to executables.
+This file would define a single unit test on the file `tar_debloated`.
+The `original` executable, that is, the unmodified program and was used to create
+the `tar_debloated` file we are testing, is simply `tar`.
+The `suite` key defines what unit test suite we wish to run -- in this
+case, we are declaring the executable to be tested as a form of the
+system utility `tar` and therefore to run all appropriate tests.
+Finally, the `included` key allows us to define which features of
+the executable and test suite are expected to pass -- in this example,
+we expect the `tar_debloated` file to pass all tests associated with all
+features of the `tar` testing suite. One could instead define
+`included = extract` for example, to inform the testing suite that
+only the tests related to extracting files are expected to pass,
+and to expect failures for any other tests run.
 
-For more info on which test suites are available, check the help:
+A full list of the recognized keys is available below.
+- `original` = the path (preferred absolute path) to the original, unmodified
+  executable used to produce the executable file under testing. This is used
+  to verify that the behavior between the two matches.
+- `suite` = defines the test suite to run on the given executable.
+- `included` and `excluded` = use either or both to specifically define
+  what features are expected to pass or fail. The exact features and tests
+  available depend on what test suite you are running.
+- `output` = the place to put the output from running the test suite. By
+  default, test output data is simply output to the terminal, but if this
+  key is set to a file path, all output will be redirected to the file
+  specified instead of the terminal.
+- `prescript` = allows the user to specify bash commands to be run prior
+  to running the test suite. NOTE: not yet fully implemented.
+
+For more info on which test suites and features are available, check the help:
 ```python
 ./run_testbed.py -h
 ```
