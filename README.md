@@ -57,7 +57,11 @@ A full list of the recognized keys is available below.
 - `suite` = defines the test suite to run on the given executable.
 - `included` and `excluded` = use either or both to specifically define
   what features are expected to pass or fail. The exact features and tests
-  available depend on what test suite you are running.
+  available depend on what test suite you are running. The pseudo-feature
+  `all` is recognized, and automatically refers to all available features
+  of a given test suite, so `included = all` could be used for example.
+  If both `included` and `excluded` are used together, then the excluded
+  features are removed from the inclusive list in that order.
 - `output` = the place to put the output from running the test suite. By
   default, test output data is simply output to the terminal, but if this
   key is set to a file path, all output will be redirected to the file
@@ -146,49 +150,36 @@ You can write it from scratch or use the following template to get started:
 import unittest
 import subprocess
 import os
-import tempfile
 
 from pytestbed.TpcpUnitTest import TpcpTestCase
 
 class TestTarExtractFile(TpcpTestCase):
-    
-    @classmethod
-    def setUpClass(cls):
-        # save the working directory we were in before running this test
-        cls._originaldir = os.getcwd()
-        # TODO: update with the name of the test suite
-        cls._workdir = 'pytestbed/tar_tests/'
-        # create a new temp directory to do our work in
-        cls._tmpdir = tempfile.TemporaryDirectory()
-        
-    @classmethod
-    def tearDownClass(cls):
-        # restore old working directory
-        os.chdir(cls._originaldir)
-        # remove the tmpdir
-        cls._tmpdir.cleanup()
         
     def setUp(self):
-        # reset dir, so we're not stuck in a non-existent temp dir
-        os.chdir(self._originaldir)
+        # set the working path, be sure to change the path name here!
+        workdirname = 'cmd_tests'
+        # set the features
+        features = ['extract']
+        # set up the test
+        self.setUpTestFeatures(workdirname, features)
         
-    ### define real tests below!
+    ### define real test below!
     
     def runTest(self):
-        # TODO: add your testing commands here!
-        # you usually start by copying testing files to your temp directory
+        # Define the test here. Usually consists of three steps:
+        # 1. Copy any needed files and resources to the temp directory
+        # 2. Run the debloated command as usual by calling self.exe
+        # 3. Save the process output and compare to the expected behavior
+        #    using a function like assertBehavior or assertBoolean.
+        #
+        # So Step 1: copy files to temp dir
         subprocess.run(["cp", "./"+self._workdir+"test.tar", self._tmpdir.name])
-        # next, switch python command line to the temp working directory
+        # change directory to temp directory to run commands
         os.chdir(self._tmpdir.name)
-        # finally, run your debloated executable and other necessary set up here
-        # you can access the full path to your debloated executable that was
-        # passed to the test case by using self.exe, as below:
-        subprocess.run([self.exe,"--option1","--option2=test.tar"])
+        # Step 2: run the debloated command
+        subprocess.run([self.exe,"--extract","--file=test.tar"])
+        # Step 3: save output and check against expected
         output = subprocess.run(["cat","file1.txt","file2.txt"], capture_output=True)
-        # every test should include at least one instance of
-        # assertBehavior and/or assertBoolean (see description below),
-        # the simplest check is to check that we got the expected output
-        # on the command line, but any unittest options would work.
         self.assertBehavior(output.stdout, b'hello \nworld \n')
 ```
 
@@ -202,18 +193,14 @@ whether a test is expected to pass or not in a given Scenario.
 The steps involved to fully add a new test case are:
 
 1. Use the template above to create a `TpcpTestCase`, or write your own.
+   The class needs to derive from `TpcpTestCase` and implement two functions:
+   `setUp(self)` which calls `setUpTestFeatures` with appropriate info,
+   and the `runTest(self)` function that actually runs the test case.
 2. Place this test case in the appropriate test suite, for example, `tar_tests`.
-3. Add the test case to all desired Scenarios in the test suite by importing
-   your new test case class into the Scenario, then adding a line like:
-   `suite.addTest(TestClassNameHere(succeeds=True, exe=path))`, where `succeeds`
-   is set to `True` or `False` depending on if the test is expected to pass
-   or fail in this Scenario (for example, if the test corresponds with a
-   feature expected to be removed).
-4. If desired, an entirely new Scenario can be created by creating a new
-   function that returns an instance of `TpcpTestSuite`. Individual unit tests
-   must be added to the test suite first before returning, similar to the
-   `addTest` example given in step 3. If you created a new Scenario, be sure
-   you've added it to the `__init__.py` file in the test suite directory!
+3. Add the test case to the `__init__.py` file in the test suite directory, 
+   then add a line like:
+   `suite.addTest(TestClassNameHere(features=features, exe=debloatpath, original=origpath))`,
+   to the `load_tests()` function in the module.
    
 These steps are preliminary and feedback is welcome! In particular,
 unit tests being added to the suite automatically is a near future goal.
